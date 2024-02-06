@@ -1,3 +1,4 @@
+import React from "react";
 import { Button, ListGroup } from "react-bootstrap";
 
 const SingleComment = ({ comment }) => {
@@ -8,12 +9,13 @@ const SingleComment = ({ comment }) => {
         {
           method: "DELETE",
           headers: {
-            Authorization: "Bearer inserisci-qui-il-tuo-token",
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWMwZjA1ZGUwODVmYTAwMTk2MzFhN2UiLCJpYXQiOjE3MDcyMjIwMzcsImV4cCI6MTcwODQzMTYzN30.I26rri3SjevMvsHdKd5KTtluWbjICHMUnVD65AC422U",
           },
         }
       );
       if (response.ok) {
-        alert("La recensione è stata elimata!");
+        alert("La recensione è stata eliminata!");
       } else {
         throw new Error("La recensione non è stata eliminata!");
       }

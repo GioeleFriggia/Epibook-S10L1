@@ -1,60 +1,80 @@
-import { Component } from "react";
+// CommentArea.jsx
+import React, { useState, useEffect } from "react";
+import { Spinner, Alert, Card } from "react-bootstrap";
 import CommentList from "./CommentList";
 import AddComment from "./AddComment";
-import Loading from "./Loading";
-import Error from "./Error";
 
-class CommentArea extends Component {
-  state = {
-    comments: [],
-    isLoading: false,
-    isError: false,
-  };
+const CommentArea = ({ asin }) => {
+  const [comments, setComments] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+  const [selectedBookTitle, setSelectedBookTitle] = useState(null);
 
-  componentDidUpdate = async (prevProps) => {
-    if (prevProps.asin !== this.props.asin) {
-      this.setState({
-        isLoading: true,
-      });
+  useEffect(() => {
+    const fetchComments = async () => {
+      setIsLoading(true);
       try {
-        let response = await fetch(
-          "https://striveschool-api.herokuapp.com/api/comments/" +
-            this.props.asin,
+        const response = await fetch(
+          `https://striveschool-api.herokuapp.com/api/comments/${asin}`,
           {
             headers: {
               Authorization:
-                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWMwZjA1ZGUwODVmYTAwMTk2MzFhN2UiLCJpYXQiOjE3MDcyMDQ3MzUsImV4cCI6MTcwODQxNDMzNX0._icsQjSEcaIVMjhXMljF4Cl1Z_QrSibFT3Nyei7HBIk",
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWMwZjA1ZGUwODVmYTAwMTk2MzFhN2UiLCJpYXQiOjE3MDcyMjIwMzcsImV4cCI6MTcwODQzMTYzN30.I26rri3SjevMvsHdKd5KTtluWbjICHMUnVD65AC422U",
             },
           }
         );
-        console.log(response);
         if (response.ok) {
-          let comments = await response.json();
-          this.setState({
-            comments: comments,
-            isLoading: false,
-            isError: false,
-          });
+          const commentsData = await response.json();
+          setComments(commentsData);
+          setIsLoading(false);
+          setIsError(false);
         } else {
-          this.setState({ isLoading: false, isError: true });
+          setIsLoading(false);
+          setIsError(true);
         }
       } catch (error) {
         console.log(error);
-        this.setState({ isLoading: false, isError: true });
+        setIsLoading(false);
+        setIsError(true);
       }
+    };
+
+    if (asin) {
+      fetchComments();
     }
+
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [asin]);
+
+  const handleBookClick = (title) => {
+    setSelectedBookTitle(title);
   };
 
-  render() {
-    return (
-      <div className="text-center">
-        {this.state.isLoading && <Loading />}
-        {this.state.isError && <Error />}
-        <AddComment asin={this.props.asin} />
-        <CommentList commentsToShow={this.state.comments} />
-      </div>
-    );
-  }
-}
+  return (
+    <Card
+      className="comment-area-container"
+      style={{ marginTop: `${scrollY}px` }}
+    >
+      <Card.Body>
+        {isLoading && <Spinner animation="border" variant="primary" />}
+        {isError && (
+          <Alert variant="danger">Errore nel caricamento dei commenti</Alert>
+        )}
+        {selectedBookTitle && <Card.Title>{selectedBookTitle}</Card.Title>}
+        <AddComment asin={asin} onSelectBook={handleBookClick} />
+        <CommentList commentsToShow={comments} onSelectBook={handleBookClick} />
+      </Card.Body>
+    </Card>
+  );
+};
 
 export default CommentArea;

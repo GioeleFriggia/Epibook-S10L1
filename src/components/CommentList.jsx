@@ -1,12 +1,23 @@
+import React from "react";
 import { ListGroup } from "react-bootstrap";
 import SingleComment from "./SingleComment";
 
-const CommentList = ({ commentsToShow }) => (
-  <ListGroup style={{ color: "black" }} className="mt-2">
-    {commentsToShow.map((comment) => (
-      <SingleComment comment={comment} key={comment._id} />
-    ))}
-  </ListGroup>
-);
+const CommentList = ({ commentsToShow, onSelectBook }) => {
+  const handleBookClick = (title) => {
+    onSelectBook(title);
+  };
+
+  return (
+    <ListGroup style={{ color: "black" }} className="mt-2">
+      {commentsToShow.map((comment) => (
+        <SingleComment
+          comment={comment}
+          key={comment._id}
+          onSelectBook={handleBookClick} // Passa la funzione onSelectBook
+        />
+      ))}
+    </ListGroup>
+  );
+};
 
 export default CommentList;
