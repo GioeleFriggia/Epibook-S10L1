@@ -1,58 +1,57 @@
-// CommentArea.jsx
-import React from "react";
+import { Component } from "react";
+import CommentList from "./CommentList";
+import AddComment from "./AddComment";
+import Loading from "./Loading";
+import Error from "./Error";
 
-class CommentArea extends React.Component {
+class CommentArea extends Component {
   state = {
     comments: [],
+    isLoading: false,
+    isError: false,
   };
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.book !== this.props.book) {
-      this.fetchComments();
-    }
-  }
-
-  fetchComments = async () => {
-    const { book } = this.props;
-
-    if (!book) {
-      this.setState({ comments: [] });
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `https://striveschool-api.herokuapp.com/api/comments/${book.asin}`,
-        {
-          headers: {
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWMwZjA1ZGUwODVmYTAwMTk2MzFhN2UiLCJpYXQiOjE3MDcxNDQ1MjMsImV4cCI6MTcwODM1NDEyM30.VTkPxi_6ob2la2HNzGLrAyTnYDBbEzjyAZl6t0wcTYM",
-          },
+  componentDidUpdate = async (prevProps) => {
+    if (prevProps.asin !== this.props.asin) {
+      this.setState({
+        isLoading: true,
+      });
+      try {
+        let response = await fetch(
+          "https://striveschool-api.herokuapp.com/api/comments/" +
+            this.props.asin,
+          {
+            headers: {
+              Authorization:
+                "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWMwZjA1ZGUwODVmYTAwMTk2MzFhN2UiLCJpYXQiOjE3MDcyMDQ3MzUsImV4cCI6MTcwODQxNDMzNX0._icsQjSEcaIVMjhXMljF4Cl1Z_QrSibFT3Nyei7HBIk",
+            },
+          }
+        );
+        console.log(response);
+        if (response.ok) {
+          let comments = await response.json();
+          this.setState({
+            comments: comments,
+            isLoading: false,
+            isError: false,
+          });
+        } else {
+          this.setState({ isLoading: false, isError: true });
         }
-      );
-
-      if (response.ok) {
-        const comments = await response.json();
-        this.setState({ comments });
-      } else {
-        console.log("Errore nella richiesta dei commenti:", response.status);
-        this.setState({ comments: [] });
+      } catch (error) {
+        console.log(error);
+        this.setState({ isLoading: false, isError: true });
       }
-    } catch (error) {
-      console.log("Errore durante il fetch dei commenti:", error);
-      this.setState({ comments: [] });
     }
   };
 
   render() {
     return (
-      <div className="comment-area-container">
-        {this.state.comments.map((comment) => (
-          <div key={comment._id}>
-            <p>{comment.comment}</p>
-            <p>Valutazione: {comment.rate}</p>
-          </div>
-        ))}
+      <div className="text-center">
+        {this.state.isLoading && <Loading />}
+        {this.state.isError && <Error />}
+        <AddComment asin={this.props.asin} />
+        <CommentList commentsToShow={this.state.comments} />
       </div>
     );
   }
