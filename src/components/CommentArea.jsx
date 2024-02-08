@@ -1,4 +1,3 @@
-// CommentArea.jsx
 import React, { useState, useEffect } from "react";
 import { Spinner, Alert, Card } from "react-bootstrap";
 import CommentList from "./CommentList";
@@ -63,6 +62,7 @@ const CommentArea = ({ asin }) => {
     <Card
       className="comment-area-container"
       style={{ marginTop: `${scrollY}px` }}
+      data-testid="comment-area" // Aggiungi l'attributo data-testid
     >
       <Card.Body>
         {isLoading && <Spinner animation="border" variant="primary" />}
